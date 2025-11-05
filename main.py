@@ -4,5 +4,5 @@ a=st.text_input('이름을 입력하세요')
 b=st.selectbox('좋아하는 음식을 선택하새요',['마카롱','케이크','딸기모찌'])
 if st.button('인삿말 생성'):
   st.info(a+'님, 안녕하새요')
-  st.warning(b+'좋아하세요? 맛있갯다..,,')
+  st.warning(b+' 좋아하세요? 맛있갯다..,,')
   st.error('반갑워')
