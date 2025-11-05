@@ -6,3 +6,4 @@ if st.button('인삿말 생성'):
   st.info(a+'안녕하긔')
   st.warning(b+' ? 맛있갯다..,,')
   st.error('반갑워')
+  st.balloons()
