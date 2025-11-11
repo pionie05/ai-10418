@@ -2,17 +2,18 @@ import streamlit as st
 from streamlit_folium import st_folium
 import folium
 import math
+import random
 
-st.set_page_config(page_title="서울 관광지 여행 일정", layout="wide")
+st.set_page_config(page_title="서울 관광 일정 플래너", layout="wide")
 
 st.title("🇰🇷 외국인이 사랑하는 서울 명소 Top10 여행 지도")
-st.markdown("서울의 주요 관광 명소 10곳을 지도에서 확인하고, 여행 일정을 자동으로 만들어보세요!")
+st.markdown("서울 주요 명소를 지도에서 확인하고, 시간대별 여행 일정을 자동으로 만들어보세요!")
 
-# 서울 중심 좌표
+# 지도 설정
 seoul_center = (37.5665, 126.9780)
 m = folium.Map(location=seoul_center, zoom_start=12)
 
-# 관광지 데이터 (한국어 설명 + 가까운 전철역)
+# 관광지 데이터 (한국어 + 전철역 정보)
 places = [
     {"name": "경복궁", "coords": (37.579617, 126.977041),
      "desc": "조선시대의 법궁으로 웅장한 건축미와 근정전이 아름다운 서울의 대표 명소입니다.",
@@ -46,7 +47,7 @@ places = [
      "station": "2호선 잠실역"},
 ]
 
-# 빨간 마커로 지도 표시
+# 지도에 빨간 마커 표시
 for p in places:
     popup_html = f"""
     <b>{p['name']}</b><br>
@@ -56,41 +57,4 @@ for p in places:
     folium.Marker(
         location=p["coords"],
         popup=folium.Popup(popup_html, max_width=250),
-        tooltip=p["name"],
-        icon=folium.Icon(color="red", icon="info-sign")
-    ).add_to(m)
-
-# 지도 표시 (크기 60%)
-st.subheader("🗺️ 서울 관광지도")
-st_data = st_folium(m, width=660, height=360)
-
-# 관광지 간단 설명 리스트
-st.markdown("---")
-st.subheader("📍 관광지 간단 안내")
-
-cols = st.columns(2)
-half = len(places) // 2
-for i, col in enumerate(cols):
-    with col:
-        subset = places[:half] if i == 0 else places[half:]
-        for p in subset:
-            st.markdown(f"**{p['name']}**  \n🚇 {p['station']}  \n{p['desc']}")
-
-# 일정 생성 기능
-st.markdown("---")
-st.subheader("🗓️ 나만의 서울 여행 일정 만들기")
-
-days = st.radio("여행 기간을 선택하세요:", [1, 2, 3], horizontal=True)
-st.write(f"👉 {days}일 동안 여행할 수 있는 일정표를 만들어드릴게요.")
-
-places_per_day = math.ceil(len(places) / days)
-schedule = [places[i:i+places_per_day] for i in range(0, len(places), places_per_day)]
-
-for d, day_places in enumerate(schedule, start=1):
-    if d > days:
-        break
-    with st.expander(f"📅 Day {d} 일정 보기"):
-        for p in day_places:
-            st.markdown(f"- **{p['name']}** (🚇 {p['station']}) — {p['desc']}")
-
-st.success("💡 일정은 단순한 예시입니다. 실제 동선은 교통시간을 고려해 조정하세요!")
+        tooltip=p["name]()
