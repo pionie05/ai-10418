@@ -57,4 +57,60 @@ for p in places:
     folium.Marker(
         location=p["coords"],
         popup=folium.Popup(popup_html, max_width=250),
-        tooltip=p["name]()
+        tooltip=p["name"],
+        icon=folium.Icon(color="red", icon="info-sign")
+    ).add_to(m)
+
+# 지도 출력 (축소)
+st.subheader("🗺️ 서울 관광지도")
+st_folium(m, width=660, height=360)
+
+# 관광지 리스트 요약
+st.markdown("---")
+st.subheader("📍 관광지 간단 안내")
+
+cols = st.columns(2)
+half = len(places) // 2
+for i, col in enumerate(cols):
+    with col:
+        subset = places[:half] if i == 0 else places[half:]
+        for p in subset:
+            st.markdown(f"**{p['name']}**  \n🚇 {p['station']}  \n{p['desc']}")
+
+# 여행 일정 생성
+st.markdown("---")
+st.subheader("🗓️ 나만의 서울 여행 일정 만들기")
+
+days = st.radio("여행 기간을 선택하세요:", [1, 2, 3], horizontal=True)
+st.write(f"👉 {days}일 동안 오전/오후/야간으로 나눈 일정표를 생성합니다.")
+
+# 일정 생성 로직
+places_per_day = math.ceil(len(places) / days)
+schedule = [places[i:i+places_per_day] for i in range(0, len(places), places_per_day)]
+
+# 예시 식사 장소
+lunch_spots = ["을지로 골목식당", "광장시장 맛집", "명동 교자", "종로 찜닭골목", "홍대 돈까스거리"]
+dinner_spots = ["남산타워 한식당", "한강 근처 레스토랑", "이태원 맛집", "홍대 포장마차 거리", "잠실 석촌호수 근처 식당"]
+
+# 일정 표시
+for d, day_places in enumerate(schedule, start=1):
+    if d > days:
+        break
+    with st.expander(f"📅 Day {d} 일정 보기"):
+        st.markdown(f"**🕗 오전 일정**  \n- {day_places[0]['name']} (🚇 {day_places[0]['station']})  \n{day_places[0]['desc']}")
+        if len(day_places) > 1:
+            st.markdown(f"- {day_places[1]['name']} (🚇 {day_places[1]['station']})")
+
+        st.markdown(f"\n🍽️ **점심식사:** {random.choice(lunch_spots)}")
+
+        if len(day_places) > 2:
+            st.markdown(f"\n**🌇 오후 일정**  \n- {day_places[2]['name']} (🚇 {day_places[2]['station']})")
+        if len(day_places) > 3:
+            st.markdown(f"- {day_places[3]['name']} (🚇 {day_places[3]['station']})")
+
+        st.markdown(f"\n🍜 **저녁식사:** {random.choice(dinner_spots)}")
+
+        if len(day_places) > 4:
+            st.markdown(f"\n**🌙 야간 일정**  \n- {day_places[4]['name']} (🚇 {day_places[4]['station']}) — 야경 명소 추천!")
+
+st.success("✨ 여행 일정을 참고해 실제 동선을 구성해보세요!")
