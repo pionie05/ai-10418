@@ -1,8 +1,8 @@
-# app.py
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.colors import n_colors, hex_to_rgb
+from pathlib import Path
 
 st.set_page_config(page_title="MBTI by Country", layout="wide")
 
@@ -10,8 +10,13 @@ st.set_page_config(page_title="MBTI by Country", layout="wide")
 # 데이터 불러오기
 # -----------------------------
 @st.cache_data
-def load_data(path="countriesMBTI_16types.csv"):
-    df = pd.read_csv(path)
+def load_data():
+    # 현재 파일 기준으로 상위 폴더에 있는 CSV 찾기
+    csv_path = Path(__file__).resolve().parent.parent / "countriesMBTI_16types.csv"
+    if not csv_path.exists():
+        st.error(f"❌ CSV 파일을 찾을 수 없습니다: {csv_path}")
+        st.stop()
+    df = pd.read_csv(csv_path)
     df["Country"] = df["Country"].astype(str)
     mbti_cols = [c for c in df.columns if c != "Country"]
     return df, mbti_cols
@@ -24,7 +29,6 @@ def make_colors(values, top_color="#FF69B4", gradient_from="#E6F9D5", gradient_t
     vals = list(values)
     max_idx = int(pd.Series(vals).idxmax())
 
-    # HEX → "rgb(r,g,b)" 변환
     def hex_to_rgb_str(h):
         rgb = hex_to_rgb(h)
         return f"rgb({rgb[0]},{rgb[1]},{rgb[2]})"
@@ -43,7 +47,7 @@ def make_colors(values, top_color="#FF69B4", gradient_from="#E6F9D5", gradient_t
         if i == max_idx:
             colors.append(top_color)
         else:
-            colors.append(grad_colors[min(gi, len(grad_colors)-1)])
+            colors.append(grad_colors[min(gi, len(grad_colors) - 1)])
             gi += 1
     return colors
 
@@ -59,13 +63,9 @@ st.markdown("""
 """)
 
 # 데이터 로드
-try:
-    df, mbti_cols = load_data()
-except FileNotFoundError:
-    st.error("❌ 'countriesMBTI_16types.csv' 파일을 같은 폴더에 업로드하세요.")
-    st.stop()
+df, mbti_cols = load_data()
 
-# 사이드바
+# 사이드바 설정
 with st.sidebar:
     st.header("⚙️ 설정")
     selected_country = st.selectbox("국가 선택", sorted(df["Country"].unique()))
@@ -75,7 +75,7 @@ with st.sidebar:
     grad_from = st.color_picker("그라데이션 시작 (연두)", "#E6F9D5")
     grad_to = st.color_picker("그라데이션 끝 (초록)", "#4CAF50")
     st.markdown("---")
-    st.info("※ CSV 파일 이름은 반드시 `countriesMBTI_16types.csv` 이어야 합니다.")
+    st.info("※ CSV 파일은 상위 폴더(`../countriesMBTI_16types.csv`)에 있어야 합니다.")
 
 # 선택된 국가 데이터
 row = df[df["Country"] == selected_country]
@@ -83,7 +83,7 @@ values = row[mbti_cols].iloc[0].tolist()
 colors = make_colors(values, top_color=top_color, gradient_from=grad_from, gradient_to=grad_to)
 
 # -----------------------------
-# Plotly 막대 그래프
+# Plotly 그래프
 # -----------------------------
 fig = go.Figure(
     go.Bar(
@@ -94,7 +94,6 @@ fig = go.Figure(
     )
 )
 
-# 그래프 꾸미기
 fig.update_layout(
     title=f"🇨🇴 {selected_country} MBTI 유형 비율",
     xaxis_title="MBTI 유형",
@@ -105,7 +104,7 @@ fig.update_layout(
     margin=dict(l=40, r=40, t=80, b=40)
 )
 
-# 1등 annotation 표시
+# 1등 annotation
 top_idx = int(pd.Series(values).idxmax())
 top_label = mbti_cols[top_idx]
 top_value = values[top_idx]
