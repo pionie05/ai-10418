@@ -11,9 +11,9 @@ st.set_page_config(page_title="MBTI by Country", layout="wide")
 # -----------------------------
 @st.cache_data
 def load_data():
-    csv_path = Path(__file__).resolve().parent.parent / "countriesMBTI_16types.csv"
+    csv_path = Path(__file__).resolve().parent / "countriesMBTI_16types.csv"
     if not csv_path.exists():
-        st.error(f"❌ CSV 파일을 찾을 수 없습니다: {csv_path.name} 파일을 루트 폴더에 두세요.")
+        st.error("❌ 'countriesMBTI_16types.csv' 파일이 pages 폴더 안에 없습니다.")
         st.stop()
     df = pd.read_csv(csv_path)
     df["Country"] = df["Country"].astype(str)
@@ -57,8 +57,8 @@ def make_colors(values, top_color="#FF69B4", gradient_from="#E6F9D5", gradient_t
 st.title("🌍 국가별 MBTI 비율 시각화")
 st.markdown("""
 전 세계 **각 국가의 MBTI 16유형 비율**을 시각화합니다.  
-- 선택한 국가의 MBTI 분포를 막대그래프로 표시합니다.  
-- **1등은 핑크색**, 나머지는 **연두 → 초록 그라데이션**으로 보여줍니다.
+- 국가를 선택하면 그 국가의 MBTI 비율을 확인할 수 있습니다.  
+- **1등은 핑크색**, 나머지는 **연두 → 초록 그라데이션**으로 표시됩니다.
 """)
 
 # 데이터 로드
@@ -76,7 +76,7 @@ with st.sidebar:
     grad_from = st.color_picker("그라데이션 시작 (연두)", "#E6F9D5")
     grad_to = st.color_picker("그라데이션 끝 (초록)", "#4CAF50")
     st.markdown("---")
-    st.info("※ CSV 파일은 루트 폴더에 있어야 합니다 (`countriesMBTI_16types.csv`).")
+    st.info("※ CSV 파일은 **pages 폴더 안**에 있어야 합니다.")
 
 # -----------------------------
 # 데이터 선택
@@ -107,7 +107,7 @@ fig.update_layout(
     margin=dict(l=40, r=40, t=80, b=40)
 )
 
-# 1등 표시
+# 1등 annotation
 top_idx = int(pd.Series(values).idxmax())
 top_label = mbti_cols[top_idx]
 top_value = values[top_idx]
