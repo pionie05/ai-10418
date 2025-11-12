@@ -11,10 +11,9 @@ st.set_page_config(page_title="MBTI by Country", layout="wide")
 # -----------------------------
 @st.cache_data
 def load_data():
-    # 현재 파일 기준으로 상위 폴더에 있는 CSV 찾기
     csv_path = Path(__file__).resolve().parent.parent / "countriesMBTI_16types.csv"
     if not csv_path.exists():
-        st.error(f"❌ CSV 파일을 찾을 수 없습니다: {csv_path}")
+        st.error(f"❌ CSV 파일을 찾을 수 없습니다: {csv_path.name} 파일을 루트 폴더에 두세요.")
         st.stop()
     df = pd.read_csv(csv_path)
     df["Country"] = df["Country"].astype(str)
@@ -57,15 +56,17 @@ def make_colors(values, top_color="#FF69B4", gradient_from="#E6F9D5", gradient_t
 # -----------------------------
 st.title("🌍 국가별 MBTI 비율 시각화")
 st.markdown("""
-이 앱은 전 세계 **158개국의 MBTI 16유형 비율 데이터**를 시각화합니다.  
-- 국가를 선택하면 그 국가의 MBTI 비율 막대그래프가 표시됩니다.  
-- **1등은 핑크색**, 나머지는 **연두 → 초록 그라데이션**으로 표시됩니다.  
+전 세계 **각 국가의 MBTI 16유형 비율**을 시각화합니다.  
+- 선택한 국가의 MBTI 분포를 막대그래프로 표시합니다.  
+- **1등은 핑크색**, 나머지는 **연두 → 초록 그라데이션**으로 보여줍니다.
 """)
 
 # 데이터 로드
 df, mbti_cols = load_data()
 
+# -----------------------------
 # 사이드바 설정
+# -----------------------------
 with st.sidebar:
     st.header("⚙️ 설정")
     selected_country = st.selectbox("국가 선택", sorted(df["Country"].unique()))
@@ -75,9 +76,11 @@ with st.sidebar:
     grad_from = st.color_picker("그라데이션 시작 (연두)", "#E6F9D5")
     grad_to = st.color_picker("그라데이션 끝 (초록)", "#4CAF50")
     st.markdown("---")
-    st.info("※ CSV 파일은 상위 폴더(`../countriesMBTI_16types.csv`)에 있어야 합니다.")
+    st.info("※ CSV 파일은 루트 폴더에 있어야 합니다 (`countriesMBTI_16types.csv`).")
 
-# 선택된 국가 데이터
+# -----------------------------
+# 데이터 선택
+# -----------------------------
 row = df[df["Country"] == selected_country]
 values = row[mbti_cols].iloc[0].tolist()
 colors = make_colors(values, top_color=top_color, gradient_from=grad_from, gradient_to=grad_to)
@@ -104,7 +107,7 @@ fig.update_layout(
     margin=dict(l=40, r=40, t=80, b=40)
 )
 
-# 1등 annotation
+# 1등 표시
 top_idx = int(pd.Series(values).idxmax())
 top_label = mbti_cols[top_idx]
 top_value = values[top_idx]
@@ -136,4 +139,4 @@ st.download_button(
     mime="text/csv"
 )
 
-st.success("✅ 국가별 MBTI 비율 시각화 완료! 사이드바에서 국가와 색상을 바꿔보세요 🎨")
+st.success("✅ 시각화 완료! 사이드바에서 국가와 색상을 바꿔보세요 🎨")
